@@ -22,7 +22,7 @@ public class DepositController {
     private final WalletService walletService;
     private final TransactionService transactionService;
 
-    @PostMapping("/deposit")
+    @PostMapping
     public String deposit(
             @RequestParam String email,
             @RequestParam BigDecimal amount
