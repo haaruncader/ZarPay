@@ -8,13 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final WalletRepository walletRepository;
 
     /**
      * Read-only derived balance
@@ -72,5 +72,10 @@ public class TransactionService {
             throw new IllegalArgumentException("Amount must be positive");
         }
     }
+
+    public List<Transaction> getWalletTransactions(Wallet wallet) {
+        return transactionRepository.findByFromWalletOrToWallet(wallet, wallet);
+    }
+
 }
 

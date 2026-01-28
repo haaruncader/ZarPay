@@ -28,6 +28,10 @@ public class TransferController {
             @RequestParam String toEmail,
             @RequestParam BigDecimal amount
     ) {
+        if (fromEmail.equalsIgnoreCase(toEmail)) {
+            throw new IllegalArgumentException("Cannot transfer to yourself");
+        }
+
         User fromUser = userService.getByEmail(fromEmail);
         User toUser = userService.getByEmail(toEmail);
 

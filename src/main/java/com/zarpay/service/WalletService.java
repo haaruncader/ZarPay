@@ -18,11 +18,6 @@ public class WalletService {
     }
 
     public Wallet createWallet(User user) {
-        return walletRepository.save(
-                Wallet.builder()
-                        .user(user)
-                        .currency("ZAR")
-                        .build()
-        );
+        return walletRepository.save(Wallet.builder().user(user).currency("ZAR").build());
     }
 }

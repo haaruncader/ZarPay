@@ -21,7 +21,6 @@ public class WalletController {
     private final UserService userService;
     private final WalletService walletService;
     private final TransactionService transactionService;
-    private final TransactionRepository transactionRepository;
 
     /**
      * Get wallet balance
@@ -42,9 +41,7 @@ public class WalletController {
     public List<Transaction> getTransactions(@RequestParam String email) {
         User user = userService.getByEmail(email);
         Wallet wallet = walletService.getWallet(user);
-        return transactionRepository.findByFromWalletOrToWallet(wallet, wallet);
+        return transactionService.getWalletTransactions(wallet);
     }
-
-
 }
 
