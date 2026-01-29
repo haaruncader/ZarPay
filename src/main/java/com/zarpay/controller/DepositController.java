@@ -1,15 +1,14 @@
 package com.zarpay.controller;
 
+import com.zarpay.dto.DepositRequest;
 import com.zarpay.entity.User;
 import com.zarpay.entity.Wallet;
 import com.zarpay.service.TransactionService;
 import com.zarpay.service.UserService;
 import com.zarpay.service.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
@@ -23,14 +22,12 @@ public class DepositController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public String deposit(
-            @RequestParam String email,
-            @RequestParam BigDecimal amount
-    ) {
-        User user = userService.getByEmail(email);
+    public String deposit(@RequestBody @Valid DepositRequest request) {
+
+        User user = userService.getByEmail(request.getEmail());
         Wallet wallet = walletService.getWallet(user);
-        transactionService.deposit(wallet, amount);
+        transactionService.deposit(wallet, request.getAmount());
+
         return "Deposit successful";
     }
-
 }

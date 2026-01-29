@@ -1,10 +1,12 @@
 package com.zarpay.controller;
 
+import com.zarpay.dto.TransferRequest;
 import com.zarpay.entity.User;
 import com.zarpay.entity.Wallet;
 import com.zarpay.service.TransactionService;
 import com.zarpay.service.UserService;
 import com.zarpay.service.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,22 +25,19 @@ public class TransferController {
      * Send money from one user to another
      */
     @PostMapping
-    public String transfer(
-            @RequestParam String fromEmail,
-            @RequestParam String toEmail,
-            @RequestParam BigDecimal amount
-    ) {
-        if (fromEmail.equalsIgnoreCase(toEmail)) {
+    public String transfer(@RequestBody @Valid TransferRequest request) {
+
+        if (request.getFromEmail().equalsIgnoreCase(request.getToEmail())) {
             throw new IllegalArgumentException("Cannot transfer to yourself");
         }
 
-        User fromUser = userService.getByEmail(fromEmail);
-        User toUser = userService.getByEmail(toEmail);
+        User fromUser = userService.getByEmail(request.getFromEmail());
+        User toUser = userService.getByEmail(request.getToEmail());
 
         Wallet fromWallet = walletService.getWallet(fromUser);
         Wallet toWallet = walletService.getWallet(toUser);
 
-        transactionService.transfer(fromWallet, toWallet, amount);
+        transactionService.transfer(fromWallet, toWallet, request.getAmount());
 
         return "Transfer successful";
     }

@@ -1,9 +1,9 @@
 package com.zarpay.controller;
 
-import com.zarpay.entity.Transaction;
+import com.zarpay.dto.WalletBalanceResponse;
+import com.zarpay.dto.TransactionResponse;
 import com.zarpay.entity.User;
 import com.zarpay.entity.Wallet;
-import com.zarpay.repository.TransactionRepository;
 import com.zarpay.service.TransactionService;
 import com.zarpay.service.UserService;
 import com.zarpay.service.WalletService;
@@ -28,20 +28,40 @@ public class WalletController {
      * GET /api/wallet/balance?email=test@example.com
      */
     @GetMapping("/balance")
-    public BigDecimal getBalance(@RequestParam String email) {
+    public WalletBalanceResponse  getBalance(@RequestParam String email) {
         User user = userService.getByEmail(email);
         Wallet wallet = walletService.getWallet(user);
-        return transactionService.getBalance(wallet);
+
+        BigDecimal balance = transactionService.getBalance(wallet);
+
+        return new WalletBalanceResponse(
+                user.getEmail(),
+                balance
+        );
     }
 
     /**
      * Transaction history
      */
     @GetMapping("/transactions")
-    public List<Transaction> getTransactions(@RequestParam String email) {
+    public List<TransactionResponse> getTransactions(@RequestParam String email) {
         User user = userService.getByEmail(email);
         Wallet wallet = walletService.getWallet(user);
-        return transactionService.getWalletTransactions(wallet);
+
+        return transactionService.getWalletTransactions(wallet)
+                .stream()
+                .map(tx -> new TransactionResponse(
+                        tx.getType().name(),
+                        tx.getAmount(),
+                        tx.getFromWallet() != null
+                                ? tx.getFromWallet().getUser().getEmail()
+                                : null,
+                        tx.getToWallet() != null
+                                ? tx.getToWallet().getUser().getEmail()
+                                : null,
+                        tx.getCreatedAt()
+                ))
+                .toList();
     }
 }
 
