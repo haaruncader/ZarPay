@@ -1,6 +1,7 @@
 package com.zarpay.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class Wallet {
     @Column(nullable = false)
     private String currency = "ZAR";
 
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 }

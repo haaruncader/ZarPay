@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -32,6 +33,7 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 }
