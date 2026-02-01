@@ -33,11 +33,15 @@ public class TransactionService {
     public Transaction deposit(Wallet toWallet, BigDecimal amount) {
         validateAmount(amount);
 
+        BigDecimal currentBalance = getBalance(toWallet);
+        BigDecimal balanceAfter = currentBalance.add(amount);
+
         Transaction tx = Transaction.builder()
                 .toWallet(toWallet)
                 .amount(amount)
-                .type(TransactionType.DEPOSIT)
+                .type(TransactionType.CREDIT)
                 .status(TransactionStatus.COMPLETED)
+                .balanceAfter(balanceAfter)
                 .build();
 
         return transactionRepository.save(tx);
@@ -47,7 +51,7 @@ public class TransactionService {
      * Wallet → Wallet transfer
      */
     @Transactional
-    public Transaction transfer(Wallet fromWallet, Wallet toWallet, BigDecimal amount) {
+    public void transfer(Wallet fromWallet, Wallet toWallet, BigDecimal amount) {
         validateAmount(amount);
 
         BigDecimal senderBalance = getBalance(fromWallet);
@@ -56,15 +60,36 @@ public class TransactionService {
             throw new IllegalStateException("Insufficient balance");
         }
 
-        Transaction tx = Transaction.builder()
+        // Sender's balance after transfer
+        BigDecimal senderBalanceAfter = senderBalance.subtract(amount);
+
+        // Receiver's balance after transfer
+        BigDecimal receiverBalance = getBalance(toWallet);
+        BigDecimal receiverBalanceAfter = receiverBalance.add(amount);
+
+        // DEBIT (Sender loses money)
+        Transaction debit = Transaction.builder()
                 .fromWallet(fromWallet)
                 .toWallet(toWallet)
                 .amount(amount)
-                .type(TransactionType.TRANSFER)
+                .type(TransactionType.DEBIT)
                 .status(TransactionStatus.COMPLETED)
+                .balanceAfter(senderBalanceAfter)
                 .build();
+            transactionRepository.save(debit);
 
-        return transactionRepository.save(tx);
+
+        // CREDIT (Receiver gains money)
+        Transaction credit = Transaction.builder()
+                .fromWallet(fromWallet)
+                .toWallet(toWallet)
+                .amount(amount)
+                .type(TransactionType.CREDIT)
+                .status(TransactionStatus.COMPLETED)
+                .balanceAfter(receiverBalanceAfter)
+                .build();
+        transactionRepository.save(credit);
+
     }
 
     private void validateAmount(BigDecimal amount) {
@@ -74,7 +99,7 @@ public class TransactionService {
     }
 
     public List<Transaction> getWalletTransactions(Wallet wallet) {
-        return transactionRepository.findByFromWalletOrToWallet(wallet, wallet);
+        return transactionRepository.findTransactionsForWallet(wallet);
     }
 
 }

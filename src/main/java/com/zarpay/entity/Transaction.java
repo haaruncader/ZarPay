@@ -63,4 +63,7 @@ public class Transaction {
     protected void onCreate() {
         this.createdAt = Instant.now();
     }
+
+    @Column(name = "balance_after")
+    private BigDecimal balanceAfter;
 }

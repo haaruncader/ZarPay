@@ -8,5 +8,6 @@ public record TransactionResponse(
         BigDecimal amount,
         String from,
         String to,
-        Instant timestamp
+        Instant timestamp,
+        BigDecimal balanceAfter
 ) {}

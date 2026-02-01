@@ -5,6 +5,7 @@ import com.zarpay.entity.Wallet;
 import com.zarpay.entity.TransactionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,15 +22,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             Wallet toWallet
     );
 
-    /**
-     * Useful for admin / reconciliation
-     */
-    List<Transaction> findByStatus(TransactionStatus status);
+
 
     @Query("""
         SELECT COALESCE(SUM(t.amount), 0)
         FROM Transaction t
         WHERE t.toWallet = :wallet
+        AND t.type = 'CREDIT'
         AND t.status = 'COMPLETED'
     """)
     BigDecimal sumIncoming(Wallet wallet);
@@ -38,8 +37,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         SELECT COALESCE(SUM(t.amount), 0)
         FROM Transaction t
         WHERE t.fromWallet = :wallet
+        AND t.type = 'DEBIT'
         AND t.status = 'COMPLETED'
     """)
     BigDecimal sumOutgoing(Wallet wallet);
+
+    @Query("""
+    SELECT t FROM Transaction t
+    WHERE (t.fromWallet = :wallet AND t.type = 'DEBIT')
+       OR (t.toWallet = :wallet AND t.type = 'CREDIT')
+    ORDER BY t.createdAt DESC
+""")
+    List<Transaction> findTransactionsForWallet(@Param("wallet") Wallet wallet);
 }
 

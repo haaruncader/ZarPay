@@ -2,6 +2,7 @@ package com.zarpay.controller;
 
 import com.zarpay.dto.WalletBalanceResponse;
 import com.zarpay.dto.TransactionResponse;
+import com.zarpay.entity.Transaction;
 import com.zarpay.entity.User;
 import com.zarpay.entity.Wallet;
 import com.zarpay.service.TransactionService;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -48,20 +50,27 @@ public class WalletController {
         User user = userService.getByEmail(email);
         Wallet wallet = walletService.getWallet(user);
 
-        return transactionService.getWalletTransactions(wallet)
-                .stream()
-                .map(tx -> new TransactionResponse(
-                        tx.getType().name(),
-                        tx.getAmount(),
-                        tx.getFromWallet() != null
-                                ? tx.getFromWallet().getUser().getEmail()
-                                : null,
-                        tx.getToWallet() != null
-                                ? tx.getToWallet().getUser().getEmail()
-                                : null,
-                        tx.getCreatedAt()
-                ))
-                .toList();
+        List<Transaction> transactions = transactionService.getWalletTransactions(wallet);
+        List<TransactionResponse> responses = new ArrayList<>(transactions.size());
+
+        for (Transaction tx : transactions) {
+            String fromEmail = tx.getFromWallet() != null
+                    ? tx.getFromWallet().getUser().getEmail()
+                    : null;
+            String toEmail = tx.getToWallet() != null
+                    ? tx.getToWallet().getUser().getEmail()
+                    : null;
+
+            responses.add(new TransactionResponse(
+                    tx.getType().name(),
+                    tx.getAmount(),
+                    fromEmail,
+                    toEmail,
+                    tx.getCreatedAt(),
+                    tx.getBalanceAfter()
+            ));
+        }
+        return responses;
     }
 }
 
