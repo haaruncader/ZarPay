@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -18,4 +19,5 @@ public class AuthController {
     public SignupResponse signup(@RequestBody @Valid SignupRequest request) {
         return authService.signup(request);
     }
+    
 }
